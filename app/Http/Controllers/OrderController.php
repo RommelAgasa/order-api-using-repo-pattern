@@ -2,26 +2,32 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\OrderResource;
 use App\Models\Order;
 use App\Http\Requests\StoreOrderRequest;
 use App\Http\Requests\UpdateOrderRequest;
+use App\Interfaces\OrderRepositoryInterface;
+use Symfony\Component\HttpFoundation\Response;
 
 class OrderController extends Controller
 {
+    private OrderRepositoryInterface $orderRepository;
+
+    public function __construct(OrderRepositoryInterface $orderRepository){
+        $this->orderRepository = $orderRepository;
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        $data = $this->orderRepository->getAllOrders();
+        return response()->json(data: [
+            'success' => true,
+            'order_count' => count($data),
+            'orders' => $data
+        ], status: Response::HTTP_OK);
     }
 
     /**
@@ -29,7 +35,24 @@ class OrderController extends Controller
      */
     public function store(StoreOrderRequest $request)
     {
-        //
+
+        $request->validated();
+
+        $orderDetails = $request->only([
+            'customer_id',
+            'details'
+        ]);
+
+        $order = $this->orderRepository->createOrder($orderDetails);
+
+        return response()->json(
+            data:[
+                'success' => true,
+                'order' => new OrderResource($order)
+            ],
+            status: Response::HTTP_CREATED
+        );
+
     }
 
     /**
@@ -37,23 +60,37 @@ class OrderController extends Controller
      */
     public function show(Order $order)
     {
-        //
+        return response()->json(
+            data:[
+                'success' => true,
+                'order' => new OrderResource($order)
+            ],
+            status: Response::HTTP_OK
+        );
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Order $order)
-    {
-        //
-    }
 
     /**
      * Update the specified resource in storage.
      */
     public function update(UpdateOrderRequest $request, Order $order)
     {
-        //
+        $request->validated();
+
+        $orderDetails =$request->only([
+            'customer_id',
+            'details'
+        ]);
+
+        $this->orderRepository->updateOrder($order->id, $orderDetails);
+
+        return response()->json(
+            data:[
+                'success' => true,
+                'order' => new OrderResource($order->fresh())
+            ],
+            status: Response::HTTP_OK
+        );
     }
 
     /**
@@ -61,6 +98,11 @@ class OrderController extends Controller
      */
     public function destroy(Order $order)
     {
-        //
+        return response()->json(
+            data:[
+                'success' => $this->orderRepository->deleteOrder($order->id) > 0
+            ],
+            status: Response::HTTP_OK
+        );
     }
 }
