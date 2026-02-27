@@ -15,6 +15,7 @@ class OrderResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+            'customer' => new UserResource($this->customer),
             'details' => $this->details,
             'is_fulfilled' => $this->is_fulfilled,
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),

@@ -6,15 +6,15 @@ use App\Http\Resources\OrderResource;
 use App\Models\Order;
 use App\Http\Requests\StoreOrderRequest;
 use App\Http\Requests\UpdateOrderRequest;
-use App\Interfaces\OrderRepositoryInterface;
+use App\Interfaces\OrderServiceInterface;
 use Symfony\Component\HttpFoundation\Response;
 
 class OrderController extends Controller
 {
-    private OrderRepositoryInterface $orderRepository;
+    private OrderServiceInterface $orderService;
 
-    public function __construct(OrderRepositoryInterface $orderRepository){
-        $this->orderRepository = $orderRepository;
+    public function __construct(OrderServiceInterface $orderService){
+        $this->orderService = $orderService;
     }
 
     /**
@@ -22,7 +22,7 @@ class OrderController extends Controller
      */
     public function index()
     {
-        $data = $this->orderRepository->getAllOrders();
+        $data = $this->orderService->getAllOrders();
         return response()->json(data: [
             'success' => true,
             'order_count' => count($data),
@@ -43,7 +43,7 @@ class OrderController extends Controller
             'details'
         ]);
 
-        $order = $this->orderRepository->createOrder($orderDetails);
+        $order = $this->orderService->createOrder($orderDetails);
 
         return response()->json(
             data:[
@@ -82,7 +82,7 @@ class OrderController extends Controller
             'details'
         ]);
 
-        $this->orderRepository->updateOrder($order->id, $orderDetails);
+        $this->orderService->updateOrder($order->id, $orderDetails);
 
         return response()->json(
             data:[
@@ -100,7 +100,7 @@ class OrderController extends Controller
     {
         return response()->json(
             data:[
-                'success' => $this->orderRepository->deleteOrder($order->id) > 0
+                'success' => $this->orderService->deleteOrder($order->id) > 0
             ],
             status: Response::HTTP_OK
         );
