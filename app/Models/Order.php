@@ -11,12 +11,13 @@ class Order extends Model
     /** @use HasFactory<\Database\Factories\OrderFactory> */
     use HasFactory;
 
-
     protected $fillable = [
         'customer_id',
         'details',
         'is_fullfilled'
     ];
+
+    // Consolas, 'Courier New', monospace
 
 
     public function customer(){
